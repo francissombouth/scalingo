@@ -1,0 +1,45 @@
+name: Terraform Scalingo Provision & Deploy
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        # with:
+        #   terraform_version: ">= 1.0.0" # Optionnel
+
+      - name: Initialize Terraform
+        run: terraform init
+        env:
+          TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }} # Optionnel
+          TF_CLOUD_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}     # Optionnel
+
+      - name: Plan Terraform
+        run: terraform plan
+
+      - name: Apply Terraform
+        run: terraform apply -auto-approve
+        env:
+          SCALINGO_TOKEN: ${{ secrets.SCALINGO_TOKEN }}
+          
+  deploy:
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Scalingo
+        uses: kolok/deploy-to-scalingo@v1
+        with:
+          scalingo_token: ${{ secrets.SCALINGO_TOKEN }}
+          app_name: osc-fr1 # Remplacez par le nom de votre application Scalingo provisionnée par Terraform 
