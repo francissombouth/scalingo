@@ -1,0 +1,20 @@
+name: Deploy to Scalingo
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    needs: terraform # S'assure que le job 'terraform' est terminé avec succès
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Scalingo
+        uses: kolok/deploy-to-scalingo@v1
+        with:
+          scalingo_token: ${{ secrets.SCALINGO_TOKEN }}
+          app_name: osc-fr1 # Remplacez par le nom de votre application Scalingo provisionnée par Terraform 
